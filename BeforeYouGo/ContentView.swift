@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
+<<<<<<< HEAD
         VStack {
             Image(systemName: "globe")
                 .imageScale(.large)
@@ -16,6 +17,11 @@ struct ContentView: View {
             Text("Hello, world!")
         }
         .padding()
+=======
+        NavigationStack{
+            ChecklistView()
+        }
+>>>>>>> 894d451 (added my screen)
     }
 }
 
