@@ -7,11 +7,19 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+<<<<<<< HEAD
 		E5C98CBC2F30082200664210 /* BeforeYouGo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BeforeYouGo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E5C98CBE2F30082200664210 /* BeforeYouGo */ = {
+=======
+		2AC068772F32E98C001CF343 /* BeforeYouGo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BeforeYouGo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		2AC068792F32E98C001CF343 /* BeforeYouGo */ = {
+>>>>>>> 894d451 (added my screen)
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = BeforeYouGo;
 			sourceTree = "<group>";
@@ -19,7 +27,11 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+<<<<<<< HEAD
 		E5C98CB92F30082200664210 /* Frameworks */ = {
+=======
+		2AC068742F32E98C001CF343 /* Frameworks */ = {
+>>>>>>> 894d451 (added my screen)
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -29,6 +41,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+<<<<<<< HEAD
 		E5C98CB32F30082200664210 = {
 			isa = PBXGroup;
 			children = (
@@ -41,6 +54,20 @@
 			isa = PBXGroup;
 			children = (
 				E5C98CBC2F30082200664210 /* BeforeYouGo.app */,
+=======
+		2AC0686E2F32E98C001CF343 = {
+			isa = PBXGroup;
+			children = (
+				2AC068792F32E98C001CF343 /* BeforeYouGo */,
+				2AC068782F32E98C001CF343 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		2AC068782F32E98C001CF343 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2AC068772F32E98C001CF343 /* BeforeYouGo.app */,
+>>>>>>> 894d451 (added my screen)
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,6 +75,7 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+<<<<<<< HEAD
 		E5C98CBB2F30082200664210 /* BeforeYouGo */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E5C98CC72F30082400664210 /* Build configuration list for PBXNativeTarget "BeforeYouGo" */;
@@ -55,43 +83,73 @@
 				E5C98CB82F30082200664210 /* Sources */,
 				E5C98CB92F30082200664210 /* Frameworks */,
 				E5C98CBA2F30082200664210 /* Resources */,
+=======
+		2AC068762F32E98C001CF343 /* BeforeYouGo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2AC068822F32E98D001CF343 /* Build configuration list for PBXNativeTarget "BeforeYouGo" */;
+			buildPhases = (
+				2AC068732F32E98C001CF343 /* Sources */,
+				2AC068742F32E98C001CF343 /* Frameworks */,
+				2AC068752F32E98C001CF343 /* Resources */,
+>>>>>>> 894d451 (added my screen)
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+<<<<<<< HEAD
 				E5C98CBE2F30082200664210 /* BeforeYouGo */,
+=======
+				2AC068792F32E98C001CF343 /* BeforeYouGo */,
+>>>>>>> 894d451 (added my screen)
 			);
 			name = BeforeYouGo;
 			packageProductDependencies = (
 			);
 			productName = BeforeYouGo;
+<<<<<<< HEAD
 			productReference = E5C98CBC2F30082200664210 /* BeforeYouGo.app */;
+=======
+			productReference = 2AC068772F32E98C001CF343 /* BeforeYouGo.app */;
+>>>>>>> 894d451 (added my screen)
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
+<<<<<<< HEAD
 		E5C98CB42F30082200664210 /* Project object */ = {
+=======
+		2AC0686F2F32E98C001CF343 /* Project object */ = {
+>>>>>>> 894d451 (added my screen)
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2610;
 				LastUpgradeCheck = 2610;
 				TargetAttributes = {
+<<<<<<< HEAD
 					E5C98CBB2F30082200664210 = {
+=======
+					2AC068762F32E98C001CF343 = {
+>>>>>>> 894d451 (added my screen)
 						CreatedOnToolsVersion = 26.1;
 					};
 				};
 			};
+<<<<<<< HEAD
 			buildConfigurationList = E5C98CB72F30082200664210 /* Build configuration list for PBXProject "BeforeYouGo" */;
+=======
+			buildConfigurationList = 2AC068722F32E98C001CF343 /* Build configuration list for PBXProject "BeforeYouGo" */;
+>>>>>>> 894d451 (added my screen)
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
+<<<<<<< HEAD
 			mainGroup = E5C98CB32F30082200664210;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
@@ -100,12 +158,26 @@
 			projectRoot = "";
 			targets = (
 				E5C98CBB2F30082200664210 /* BeforeYouGo */,
+=======
+			mainGroup = 2AC0686E2F32E98C001CF343;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 2AC068782F32E98C001CF343 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2AC068762F32E98C001CF343 /* BeforeYouGo */,
+>>>>>>> 894d451 (added my screen)
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+<<<<<<< HEAD
 		E5C98CBA2F30082200664210 /* Resources */ = {
+=======
+		2AC068752F32E98C001CF343 /* Resources */ = {
+>>>>>>> 894d451 (added my screen)
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -115,7 +187,11 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+<<<<<<< HEAD
 		E5C98CB82F30082200664210 /* Sources */ = {
+=======
+		2AC068732F32E98C001CF343 /* Sources */ = {
+>>>>>>> 894d451 (added my screen)
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -125,7 +201,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+<<<<<<< HEAD
 		E5C98CC52F30082400664210 /* Debug */ = {
+=======
+		2AC068802F32E98D001CF343 /* Debug */ = {
+>>>>>>> 894d451 (added my screen)
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -188,7 +268,11 @@
 			};
 			name = Debug;
 		};
+<<<<<<< HEAD
 		E5C98CC62F30082400664210 /* Release */ = {
+=======
+		2AC068812F32E98D001CF343 /* Release */ = {
+>>>>>>> 894d451 (added my screen)
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -244,7 +328,11 @@
 			};
 			name = Release;
 		};
+<<<<<<< HEAD
 		E5C98CC82F30082400664210 /* Debug */ = {
+=======
+		2AC068832F32E98D001CF343 /* Debug */ = {
+>>>>>>> 894d451 (added my screen)
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -258,13 +346,20 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+<<<<<<< HEAD
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+=======
+>>>>>>> 894d451 (added my screen)
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+<<<<<<< HEAD
 				PRODUCT_BUNDLE_IDENTIFIER = mobiledev.BeforeYouGo;
+=======
+				PRODUCT_BUNDLE_IDENTIFIER = gblearn.BeforeYouGo;
+>>>>>>> 894d451 (added my screen)
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -276,7 +371,11 @@
 			};
 			name = Debug;
 		};
+<<<<<<< HEAD
 		E5C98CC92F30082400664210 /* Release */ = {
+=======
+		2AC068842F32E98D001CF343 /* Release */ = {
+>>>>>>> 894d451 (added my screen)
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -290,13 +389,20 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+<<<<<<< HEAD
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+=======
+>>>>>>> 894d451 (added my screen)
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+<<<<<<< HEAD
 				PRODUCT_BUNDLE_IDENTIFIER = mobiledev.BeforeYouGo;
+=======
+				PRODUCT_BUNDLE_IDENTIFIER = gblearn.BeforeYouGo;
+>>>>>>> 894d451 (added my screen)
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -311,25 +417,45 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+<<<<<<< HEAD
 		E5C98CB72F30082200664210 /* Build configuration list for PBXProject "BeforeYouGo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E5C98CC52F30082400664210 /* Debug */,
 				E5C98CC62F30082400664210 /* Release */,
+=======
+		2AC068722F32E98C001CF343 /* Build configuration list for PBXProject "BeforeYouGo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2AC068802F32E98D001CF343 /* Debug */,
+				2AC068812F32E98D001CF343 /* Release */,
+>>>>>>> 894d451 (added my screen)
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+<<<<<<< HEAD
 		E5C98CC72F30082400664210 /* Build configuration list for PBXNativeTarget "BeforeYouGo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E5C98CC82F30082400664210 /* Debug */,
 				E5C98CC92F30082400664210 /* Release */,
+=======
+		2AC068822F32E98D001CF343 /* Build configuration list for PBXNativeTarget "BeforeYouGo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2AC068832F32E98D001CF343 /* Debug */,
+				2AC068842F32E98D001CF343 /* Release */,
+>>>>>>> 894d451 (added my screen)
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
+<<<<<<< HEAD
 	rootObject = E5C98CB42F30082200664210 /* Project object */;
+=======
+	rootObject = 2AC0686F2F32E98C001CF343 /* Project object */;
+>>>>>>> 894d451 (added my screen)
 }
