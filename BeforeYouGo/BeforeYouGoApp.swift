@@ -13,12 +13,8 @@ struct BeforeYouGoApp: App {
 
     var body: some Scene {
         WindowGroup {
-<<<<<<< HEAD
-            PlacesListView()
-                .environmentObject(vm)
-=======
             ContentView()
->>>>>>> 894d451 (added my screen)
+                .environmentObject(vm)
         }
     }
 }

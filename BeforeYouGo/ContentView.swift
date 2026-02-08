@@ -9,19 +9,9 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-<<<<<<< HEAD
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
-=======
-        NavigationStack{
+        NavigationStack {
             ChecklistView()
         }
->>>>>>> 894d451 (added my screen)
     }
 }
 
