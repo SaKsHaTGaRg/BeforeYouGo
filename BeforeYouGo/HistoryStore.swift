@@ -17,6 +17,21 @@ final class HistoryStore: ObservableObject {
 
     init() {
         load()
+
+        if events.isEmpty {
+            add(
+                placeName: "Home",
+                checklistName: "Home Checklist",
+                checklistItems: ["Keys", "Wallet", "Phone"],
+                exitTime: Date().addingTimeInterval(-60 * 60 * 3)
+            )
+            add(
+                placeName: "Work",
+                checklistName: "Work Checklist",
+                checklistItems: ["Laptop", "Badge", "Water bottle"],
+                exitTime: Date().addingTimeInterval(-60 * 30)
+            )
+        }
     }
 
     func add(placeName: String, checklistName: String, checklistItems: [String], exitTime: Date = Date()) {
@@ -53,3 +68,4 @@ final class HistoryStore: ObservableObject {
         }
     }
 }
+
