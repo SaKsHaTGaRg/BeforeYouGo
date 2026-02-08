@@ -11,6 +11,7 @@ struct ChecklistView: View {
     
     @StateObject private var viewModel = ChecklistViewModel()
     @State private var newItemText: String = ""
+    @State private var expandedItemId: ChecklistItem.ID? = nil
     
     var body: some View {
         List{
@@ -57,23 +58,57 @@ struct ChecklistView: View {
         newItemText=""
     }
     private func row(_ item: ChecklistItem) -> some View {
-        HStack(spacing:12){
-            Button{
-                viewModel.toggleEnabled(item)
-            } label:{
-                Image(systemName:item.isEnabled ? "checkmark.circle.fill":"circle").font(.title3)
+        VStack(alignment: .leading, spacing: 8){
+            HStack(spacing:12){
+                Button{
+                    viewModel.toggleEnabled(item)
+                } label:{
+                    Image(systemName:item.isEnabled ? "checkmark.circle.fill":"circle").font(.title3)
+                }
+                .buttonStyle(.plain)
+                
+                Text(item.title).foregroundStyle(item.isEnabled ? .primary : .secondary)
+                Spacer()
+                Button{
+                    viewModel.togglePinned(item)
+                } label:{
+                    Image(systemName:item.isPinned ? "pin.fill" : "pin")
+                }
+                .buttonStyle(.plain)
+                
+                Button {
+                    withAnimation(.snappy){
+                        expandedItemId = (expandedItemId == item.id) ? nil : item.id
+                    }
+                }
+                label: {
+                    Image(systemName: expandedItemId == item.id ? "chevron.up" : "chevron.down").font(.subheadline).foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
-            
-            Text(item.title).foregroundStyle(item.isEnabled ? .primary : .secondary)
-            Spacer()
-            Button{
-                viewModel.togglePinned(item)
-            } label:{
-                Image(systemName:item.isPinned ? "pin.fill" : "pin")
+            if expandedItemId == item.id{
+                VStack(alignment:.leading, spacing: 6){
+                    Text("Notification message")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    TextField("Don't forget your \(item.title)!",
+                              text:Binding(
+                                get:{item.customMessage ?? ""},
+                                set:{viewModel.updateMessage(for: item, message: $0)}
+                              ),
+                              axis: .vertical
+                    )
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .lineLimit(2...4)
+                    
+                    Text("Preview \(item.notification)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .padding()
             }
-            .buttonStyle(.plain)
         }
+        .contentShape(Rectangle())
         .swipeActions(edge: .trailing, allowsFullSwipe:true){
             Button(role:.destructive){
                 viewModel.delete(item)

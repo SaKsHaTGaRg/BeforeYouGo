@@ -11,12 +11,19 @@ struct ChecklistItem: Identifiable, Hashable {
     var title: String
     var isEnabled: Bool
     var isPinned: Bool
+    var customMessage: String?
+    
+    var notification: String {
+        let trimmed = (customMessage ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "Don't forget your \(title)!" : trimmed
+    }
 
-    init(id: UUID = UUID(), title: String, isEnabled: Bool = true, isPinned: Bool = false)
+    init(id: UUID = UUID(), title: String, isEnabled: Bool = true, isPinned: Bool = false, customMessage: String? = nil)
     {
         self.id = id
         self.title = title
         self.isEnabled = isEnabled
         self.isPinned = isPinned
+        self.customMessage = customMessage
     }
 }

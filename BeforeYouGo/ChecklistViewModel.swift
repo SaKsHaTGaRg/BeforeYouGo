@@ -26,6 +26,11 @@ final class ChecklistViewModel: ObservableObject {
         guard !t.isEmpty else {return}
         items.append(ChecklistItem(title:t))
     }
+    func updateMessage(for item: ChecklistItem, message: String){
+        guard let i = items.firstIndex(where: { $0.id == item.id }) else {return}
+        let trimmed = message.trimmingCharacters(in: .whitespacesAndNewlines)
+        items[i].customMessage = trimmed.isEmpty ? nil : trimmed
+    }
     func toggleEnabled(_ item:ChecklistItem){
         guard let index = items.firstIndex(where: { $0.id == item.id }) else {return}
         items[index].isEnabled.toggle()
