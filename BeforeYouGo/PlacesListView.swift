@@ -1,9 +1,13 @@
 import SwiftUI
+ import CoreLocation
 
 struct PlacesListView: View {
     @EnvironmentObject var vm: PlacesViewModel
+    @EnvironmentObject var locationService: LocationManagerService
+
     @State private var showAddPlace = false
     @State private var editingPlace: Place?
+    @State private var showPermissionAlert = false
 
     var body: some View {
         NavigationStack {
@@ -14,6 +18,10 @@ struct PlacesListView: View {
                     emptyStateView
                 } else {
                     placesList
+                }
+
+                if !locationService.lastEventMessage.isEmpty {
+                    statusBanner
                 }
 
                 addPlaceButton
@@ -31,6 +39,14 @@ struct PlacesListView: View {
                     AddPlaceView(existingPlace: place)
                         .environmentObject(vm)
                 }
+            }
+            .alert("Location Permission Needed", isPresented: $showPermissionAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("Please allow location access so region monitoring can work.")
+            }
+            .onAppear {
+                locationService.restartMonitoring(for: vm.places)
             }
         }
     }
@@ -96,6 +112,8 @@ struct PlacesListView: View {
                                 .foregroundStyle(.secondary)
                                 .lineLimit(2)
                         }
+
+                        monitoringStatusText(for: place)
                     }
 
                     Spacer()
@@ -104,7 +122,9 @@ struct PlacesListView: View {
                         "",
                         isOn: Binding(
                             get: { place.isEnabled },
-                            set: { _ in vm.togglePlace(place) }
+                            set: { newValue in
+                                handleToggleChange(for: place, newValue: newValue)
+                            }
                         )
                     )
                     .labelsHidden()
@@ -115,9 +135,38 @@ struct PlacesListView: View {
                 }
                 .padding(.vertical, 4)
             }
-            .onDelete(perform: vm.deletePlaces)
+            .onDelete(perform: deletePlaces)
         }
         .listStyle(.insetGrouped)
+    }
+
+    @ViewBuilder
+    private func monitoringStatusText(for place: Place) -> some View {
+        if !place.hasCoordinates {
+            Text("No coordinates saved")
+                .font(.caption2)
+                .foregroundStyle(.orange)
+        } else if locationService.isMonitoring(place) {
+            Text("Monitoring active")
+                .font(.caption2)
+                .foregroundStyle(.green)
+        } else if place.isEnabled {
+            Text("Enabled, not currently monitored")
+                .font(.caption2)
+                .foregroundStyle(.orange)
+        } else {
+            Text("Monitoring off")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var statusBanner: some View {
+        Text(locationService.lastEventMessage)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 8)
     }
 
     private var addPlaceButton: some View {
@@ -136,5 +185,39 @@ struct PlacesListView: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 16)
         }
+    }
+
+    private func handleToggleChange(for place: Place, newValue: Bool) {
+        let currentValue = place.isEnabled
+        guard currentValue != newValue else { return }
+
+        if newValue {
+            if locationService.authorizationStatus == .notDetermined {
+                locationService.requestPermission()
+                showPermissionAlert = true
+            } else if locationService.authorizationStatus == .denied || locationService.authorizationStatus == .restricted {
+                showPermissionAlert = true
+            }
+        }
+
+        vm.togglePlace(place)
+
+        if newValue {
+            if let updatedPlace = vm.places.first(where: { $0.id == place.id }) {
+                locationService.startMonitoring(for: updatedPlace)
+            }
+        } else {
+            locationService.stopMonitoring(for: place)
+        }
+    }
+
+    private func deletePlaces(at offsets: IndexSet) {
+        let placesToDelete = offsets.map { vm.places[$0] }
+
+        for place in placesToDelete {
+            locationService.stopMonitoring(for: place)
+        }
+
+        vm.deletePlaces(at: offsets)
     }
 }

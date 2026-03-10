@@ -28,7 +28,7 @@ final class PlacesViewModel: ObservableObject {
 
         let newPlace = Place(
             name: trimmedName,
-            isEnabled: true,
+            isEnabled: false,
             radiusMeters: radiusMeters,
             address: address,
             latitude: latitude,
@@ -50,7 +50,6 @@ final class PlacesViewModel: ObservableObject {
     ) {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { return }
-
         guard let index = places.firstIndex(where: { $0.id == id }) else { return }
 
         places[index].name = trimmedName
