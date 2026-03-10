@@ -22,6 +22,13 @@ struct ContentView: View {
             .tabItem {
                 Label("History", systemImage: "clock")
             }
+            
+            NavigationStack {
+                PlacesListView()
+            }
+            .tabItem {
+                Label("Places", systemImage: "map")
+            }
 
             SettingsView()
                 .tabItem {
