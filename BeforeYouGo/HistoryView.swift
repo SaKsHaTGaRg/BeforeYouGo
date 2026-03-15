@@ -26,6 +26,14 @@ struct HistoryView: View {
                     }
                     .padding(.horizontal)
                     .padding(.top)
+                    .disabled(vm.places.isEmpty)
+
+                    if vm.places.isEmpty {
+                        Text("Add a place first to simulate an exit notification.")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .padding(.horizontal)
+                    }
 
                     if historyStore.events.isEmpty {
                         Spacer()
@@ -55,7 +63,8 @@ struct HistoryView: View {
     private func simulateExitNotification() {
         guard let place = vm.places.first else { return }
 
-        let checklistTitles = checklistViewModel.enabledItems(for: place.id)
+        let checklistTitles = checklistViewModel
+        .enabledItems(for: place.id)
         .map { $0.title }
 
         let bodyText: String
@@ -127,4 +136,8 @@ struct HistoryRowView: View {
             .stroke(Color.gray.opacity(0.2), lineWidth: 1)
         )
     }
+}
+
+#Preview {
+    HistoryView()
 }
