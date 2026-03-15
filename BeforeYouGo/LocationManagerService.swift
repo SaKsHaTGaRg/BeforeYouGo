@@ -1,21 +1,37 @@
 import Foundation
 import CoreLocation
 import Combine
+import UserNotifications
 
 @MainActor
 final class LocationManagerService: NSObject, ObservableObject {
     @Published var authorizationStatus: CLAuthorizationStatus
     @Published var lastEventMessage: String = ""
 
-    private let manager = CLLocationManager()
+    private let manager: CLLocationManager
     private var regionNameMap: [String: String] = [:]
 
-    override init() {
-        self.authorizationStatus = manager.authorizationStatus
+    private let historyStore: HistoryStore
+    private let checklistViewModel: ChecklistViewModel
+    private let notificationService: NotificationService
+
+    init(
+        historyStore: HistoryStore,
+        checklistViewModel: ChecklistViewModel,
+        notificationService: NotificationService
+    ) {
+        let locationManager = CLLocationManager()
+        self.manager = locationManager
+        self.authorizationStatus = locationManager.authorizationStatus
+        self.historyStore = historyStore
+        self.checklistViewModel = checklistViewModel
+        self.notificationService = notificationService
+
         super.init()
-        manager.delegate = self
-        manager.desiredAccuracy = kCLLocationAccuracyBest
-        manager.allowsBackgroundLocationUpdates = false
+
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.allowsBackgroundLocationUpdates = false
     }
 
     func requestPermission() {
@@ -66,10 +82,8 @@ final class LocationManagerService: NSObject, ObservableObject {
     }
 
     func circularRegion(for place: Place) -> CLCircularRegion? {
-        guard
-            let latitude = place.latitude,
-            let longitude = place.longitude
-        else {
+        guard let latitude = place.latitude,
+              let longitude = place.longitude else {
             return nil
         }
 
@@ -83,7 +97,6 @@ final class LocationManagerService: NSObject, ObservableObject {
         )
         region.notifyOnEntry = false
         region.notifyOnExit = true
-
         return region
     }
 
@@ -97,6 +110,35 @@ final class LocationManagerService: NSObject, ObservableObject {
 
     private func regionDisplayName(for identifier: String) -> String {
         regionNameMap[identifier] ?? identifier
+    }
+
+    private func enabledChecklistItems() -> [ChecklistItem] {
+        checklistViewModel.items.filter { $0.isEnabled }
+    }
+
+    private func sendExitReminder(for placeName: String) {
+        let enabledItems = enabledChecklistItems()
+        let checklistName = "\(placeName) Checklist"
+        let checklistTitles = enabledItems.map { $0.title }
+
+        let notificationBody: String
+        if checklistTitles.isEmpty {
+            notificationBody = "You left \(placeName). No enabled checklist items."
+        } else {
+            notificationBody = "You left \(placeName). Don’t forget: " + checklistTitles.joined(separator: ", ")
+        }
+
+        notificationService.sendNotification(
+            title: "Checklist Reminder",
+            body: notificationBody
+        )
+
+        historyStore.add(
+            placeName: placeName,
+            checklistName: checklistName,
+            checklistItems: checklistTitles,
+            exitTime: Date()
+        )
     }
 }
 
@@ -127,8 +169,12 @@ extension LocationManagerService: CLLocationManagerDelegate {
     }
 
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
-        lastEventMessage = "Exited region for \(regionDisplayName(for: region.identifier))"
+        let placeName = regionDisplayName(for: region.identifier)
+        lastEventMessage = "Exited region for \(placeName)"
         print("didExitRegion fired for: \(region.identifier)")
+
+        sendExitReminder(for: placeName)
+
         objectWillChange.send()
     }
 
