@@ -16,7 +16,7 @@ final class AppDataStore {
         self.context = context
     }
 
-    //PLACES
+    // PLACES
     func fetchPlaces() -> [Place] {
         let descriptor = FetchDescriptor<PlaceModel>(
             sortBy: [SortDescriptor(\.name)]
@@ -26,11 +26,14 @@ final class AppDataStore {
     }
 
     func savePlace(_ place: Place) {
+        let placeID = place.id
+
         let descriptor = FetchDescriptor<PlaceModel>(
-            predicate: #Predicate { $0.id == place.id }
+            predicate: #Predicate { $0.id == placeID }
         )
 
-        if let existing = try? context.fetch(descriptor).first, let existing {
+        if let models = try? context.fetch(descriptor),
+        let existing = models.first {
             existing.update(from: place)
         } else {
             context.insert(place.toModel())
@@ -40,17 +43,20 @@ final class AppDataStore {
     }
 
     func deletePlace(id: UUID) {
+        let placeID = id
+
         let descriptor = FetchDescriptor<PlaceModel>(
-            predicate: #Predicate { $0.id == id }
+            predicate: #Predicate { $0.id == placeID }
         )
 
-        if let model = try? context.fetch(descriptor).first, let model {
+        if let models = try? context.fetch(descriptor),
+        let model = models.first {
             context.delete(model)
             try? context.save()
         }
     }
 
-    //CHECKLIST
+    // CHECKLIST
     func fetchChecklistItems() -> [ChecklistItem] {
         let descriptor = FetchDescriptor<ChecklistItemModel>(
             sortBy: [SortDescriptor(\.sortOrder)]
@@ -60,11 +66,14 @@ final class AppDataStore {
     }
 
     func saveChecklistItem(_ item: ChecklistItem) {
+        let itemID = item.id
+
         let descriptor = FetchDescriptor<ChecklistItemModel>(
-            predicate: #Predicate { $0.id == item.id }
+            predicate: #Predicate { $0.id == itemID }
         )
 
-        if let existing = try? context.fetch(descriptor).first, let existing {
+        if let models = try? context.fetch(descriptor),
+        let existing = models.first {
             existing.update(from: item)
         } else {
             context.insert(item.toModel())
@@ -81,17 +90,20 @@ final class AppDataStore {
     }
 
     func deleteChecklistItem(id: UUID) {
+        let itemID = id
+
         let descriptor = FetchDescriptor<ChecklistItemModel>(
-            predicate: #Predicate { $0.id == id }
+            predicate: #Predicate { $0.id == itemID }
         )
 
-        if let model = try? context.fetch(descriptor).first, let model {
+        if let models = try? context.fetch(descriptor),
+        let model = models.first {
             context.delete(model)
             try? context.save()
         }
     }
 
-    //HISTORY
+    // HISTORY
     func fetchHistoryEvents() -> [HistoryEvent] {
         let descriptor = FetchDescriptor<HistoryEventModel>(
             sortBy: [SortDescriptor(\.exitTime, order: .reverse)]
