@@ -13,58 +13,36 @@ import SwiftUI
 final class HistoryStore: ObservableObject {
     @Published private(set) var events: [HistoryEvent] = []
 
-    private let key = "beforeyougo.history.events"
+    private let dataStore: AppDataStore
 
-    init() {
+    init(dataStore: AppDataStore) {
+        self.dataStore = dataStore
         load()
-
-        if events.isEmpty {
-            add(
-                placeName: "Home",
-                checklistName: "Home Checklist",
-                checklistItems: ["Keys", "Wallet", "Phone"],
-                exitTime: Date().addingTimeInterval(-60 * 60 * 3)
-            )
-            add(
-                placeName: "Work",
-                checklistName: "Work Checklist",
-                checklistItems: ["Laptop", "Badge", "Water bottle"],
-                exitTime: Date().addingTimeInterval(-60 * 30)
-            )
-        }
     }
 
-    func add(placeName: String, checklistName: String, checklistItems: [String], exitTime: Date = Date()) {
+    func add(
+    placeName: String,
+    checklistName: String,
+    checklistItems: [String],
+    exitTime: Date = Date()
+    ) {
         let event = HistoryEvent(
             placeName: placeName,
             exitTime: exitTime,
             checklistName: checklistName,
             checklistItems: checklistItems
         )
-        events.insert(event, at: 0)
-        save()
+
+        dataStore.saveHistoryEvent(event)
+        load()
     }
 
     func clear() {
-        events = []
-        save()
+        dataStore.clearHistory()
+        load()
     }
 
     private func load() {
-        guard let data = UserDefaults.standard.data(forKey: key) else { return }
-        do {
-            events = try JSONDecoder().decode([HistoryEvent].self, from: data)
-        } catch {
-            events = []
-        }
-    }
-
-    private func save() {
-        do {
-            let data = try JSONEncoder().encode(events)
-            UserDefaults.standard.set(data, forKey: key)
-        } catch {
-            // ignore for now
-        }
+        events = dataStore.fetchHistoryEvents()
     }
 }

@@ -3,25 +3,22 @@ import Combine
 
 @MainActor
 final class PlacesViewModel: ObservableObject {
-    @Published var places: [Place] = [] {
-        didSet {
-            savePlaces()
-        }
-    }
+    @Published var places: [Place] = []
 
-    private let storageKey = "saved_places"
+    private let dataStore: AppDataStore
 
-    init() {
+    init(dataStore: AppDataStore) {
+        self.dataStore = dataStore
         loadPlaces()
     }
 
     func addPlace(
-        name: String,
-        radiusMeters: Double,
-        address: String? = nil,
-        latitude: Double? = nil,
-        longitude: Double? = nil,
-        locationSource: Place.LocationSource = .unknown
+    name: String,
+    radiusMeters: Double,
+    address: String? = nil,
+    latitude: Double? = nil,
+    longitude: Double? = nil,
+    locationSource: Place.LocationSource = .unknown
     ) {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { return }
@@ -36,59 +33,65 @@ final class PlacesViewModel: ObservableObject {
             locationSource: locationSource
         )
 
-        places.append(newPlace)
+        dataStore.savePlace(newPlace)
+        loadPlaces()
     }
 
     func updatePlace(
-        id: UUID,
-        name: String,
-        radiusMeters: Double,
-        address: String? = nil,
-        latitude: Double? = nil,
-        longitude: Double? = nil,
-        locationSource: Place.LocationSource = .unknown
+    id: UUID,
+    name: String,
+    radiusMeters: Double,
+    address: String? = nil,
+    latitude: Double? = nil,
+    longitude: Double? = nil,
+    locationSource: Place.LocationSource = .unknown
     ) {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { return }
-        guard let index = places.firstIndex(where: { $0.id == id }) else { return }
+        guard let existing = places.first(where: { $0.id == id }) else { return }
 
-        places[index].name = trimmedName
-        places[index].radiusMeters = radiusMeters
-        places[index].address = address
-        places[index].latitude = latitude
-        places[index].longitude = longitude
-        places[index].locationSource = locationSource
+        let updated = Place(
+            id: existing.id,
+            name: trimmedName,
+            isEnabled: existing.isEnabled,
+            radiusMeters: radiusMeters,
+            address: address,
+            latitude: latitude,
+            longitude: longitude,
+            locationSource: locationSource
+        )
+
+        dataStore.savePlace(updated)
+        loadPlaces()
     }
 
     func togglePlace(_ place: Place) {
-        guard let index = places.firstIndex(where: { $0.id == place.id }) else { return }
-        places[index].isEnabled.toggle()
+        guard let existing = places.first(where: { $0.id == place.id }) else { return }
+
+        let updated = Place(
+            id: existing.id,
+            name: existing.name,
+            isEnabled: !existing.isEnabled,
+            radiusMeters: existing.radiusMeters,
+            address: existing.address,
+            latitude: existing.latitude,
+            longitude: existing.longitude,
+            locationSource: existing.locationSource
+        )
+
+        dataStore.savePlace(updated)
+        loadPlaces()
     }
 
     func deletePlaces(at offsets: IndexSet) {
-        places.remove(atOffsets: offsets)
-    }
-
-    private func savePlaces() {
-        do {
-            let data = try JSONEncoder().encode(places)
-            UserDefaults.standard.set(data, forKey: storageKey)
-        } catch {
-            print("Failed to save places: \(error.localizedDescription)")
+        let ids = offsets.map { places[$0].id }
+        for id in ids {
+            dataStore.deletePlace(id: id)
         }
+        loadPlaces()
     }
 
     private func loadPlaces() {
-        guard let data = UserDefaults.standard.data(forKey: storageKey) else {
-            places = []
-            return
-        }
-
-        do {
-            places = try JSONDecoder().decode([Place].self, from: data)
-        } catch {
-            print("Failed to load places: \(error.localizedDescription)")
-            places = []
-        }
+        places = dataStore.fetchPlaces()
     }
 }
