@@ -11,6 +11,7 @@ import SwiftData
 @Model
 final class ChecklistItemModel {
     var id: UUID
+    var placeId: UUID
     var title: String
     var isEnabled: Bool
     var isPinned: Bool
@@ -19,6 +20,7 @@ final class ChecklistItemModel {
 
     init(
     id: UUID = UUID(),
+    placeId: UUID,
     title: String,
     isEnabled: Bool = true,
     isPinned: Bool = false,
@@ -26,16 +28,12 @@ final class ChecklistItemModel {
     sortOrder: Int
     ) {
         self.id = id
+        self.placeId = placeId
         self.title = title
         self.isEnabled = isEnabled
         self.isPinned = isPinned
         self.customMessage = customMessage
         self.sortOrder = sortOrder
-    }
-
-    var notification: String {
-        let trimmed = (customMessage ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? "Don't forget your \(title)!" : trimmed
     }
 }
 
@@ -43,6 +41,7 @@ extension ChecklistItemModel {
     func toChecklistItem() -> ChecklistItem {
         ChecklistItem(
             id: id,
+            placeId: placeId,
             title: title,
             isEnabled: isEnabled,
             isPinned: isPinned,
@@ -53,6 +52,7 @@ extension ChecklistItemModel {
 
     func update(from item: ChecklistItem) {
         id = item.id
+        placeId = item.placeId
         title = item.title
         isEnabled = item.isEnabled
         isPinned = item.isPinned
@@ -65,6 +65,7 @@ extension ChecklistItem {
     func toModel() -> ChecklistItemModel {
         ChecklistItemModel(
             id: id,
+            placeId: placeId,
             title: title,
             isEnabled: isEnabled,
             isPinned: isPinned,

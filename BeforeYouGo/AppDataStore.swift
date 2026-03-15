@@ -57,12 +57,20 @@ final class AppDataStore {
     }
 
     // CHECKLIST
-    func fetchChecklistItems() -> [ChecklistItem] {
+    func fetchChecklistItems(for placeId: UUID) -> [ChecklistItem] {
+        let pid = placeId
+
         let descriptor = FetchDescriptor<ChecklistItemModel>(
+            predicate: #Predicate { $0.placeId == pid },
             sortBy: [SortDescriptor(\.sortOrder)]
         )
+
         let models = (try? context.fetch(descriptor)) ?? []
         return models.map { $0.toChecklistItem() }
+    }
+
+    func fetchEnabledChecklistItems(for placeId: UUID) -> [ChecklistItem] {
+        fetchChecklistItems(for: placeId).filter { $0.isEnabled }
     }
 
     func saveChecklistItem(_ item: ChecklistItem) {
@@ -101,6 +109,21 @@ final class AppDataStore {
             context.delete(model)
             try? context.save()
         }
+    }
+
+    func deleteChecklistItems(for placeId: UUID) {
+        let pid = placeId
+
+        let descriptor = FetchDescriptor<ChecklistItemModel>(
+            predicate: #Predicate { $0.placeId == pid }
+        )
+
+        let models = (try? context.fetch(descriptor)) ?? []
+        for model in models {
+            context.delete(model)
+        }
+
+        try? context.save()
     }
 
     // HISTORY

@@ -14,10 +14,10 @@ final class ChecklistViewModel: ObservableObject {
     @Published var items: [ChecklistItem] = []
 
     private let dataStore: AppDataStore
+    private(set) var currentPlaceId: UUID?
 
     init(dataStore: AppDataStore) {
         self.dataStore = dataStore
-        loadItems()
     }
 
     var pinned: [ChecklistItem] {
@@ -28,11 +28,24 @@ final class ChecklistViewModel: ObservableObject {
         items.filter { !$0.isPinned }.sorted { $0.sortOrder < $1.sortOrder }
     }
 
+    func loadItems(for placeId: UUID) {
+        currentPlaceId = placeId
+        items = dataStore.fetchChecklistItems(for: placeId)
+        normalizeSortOrders()
+    }
+
+    func enabledItems(for placeId: UUID) -> [ChecklistItem] {
+        dataStore.fetchEnabledChecklistItems(for: placeId)
+    }
+
     func addItem(_ title: String) {
+        guard let placeId = currentPlaceId else { return }
+
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
 
         let newItem = ChecklistItem(
+            placeId: placeId,
             title: trimmed,
             isEnabled: true,
             isPinned: false,
@@ -93,11 +106,6 @@ final class ChecklistViewModel: ObservableObject {
         persistAll()
     }
 
-    private func loadItems() {
-        items = dataStore.fetchChecklistItems()
-        normalizeSortOrders()
-    }
-
     private func nextSortOrder() -> Int {
         (items.map(\.sortOrder).max() ?? -1) + 1
     }
@@ -135,8 +143,10 @@ final class ChecklistViewModel: ObservableObject {
 
     private func persistAll() {
         dataStore.saveChecklistItems(items)
-        items = dataStore.fetchChecklistItems()
+
+        if let currentPlaceId {
+            items = dataStore.fetchChecklistItems(for: currentPlaceId)
+        }
     }
 }
-    
     

@@ -10,19 +10,12 @@ struct ContentView: View {
     var body: some View {
         TabView {
             NavigationStack {
-                ChecklistView()
-            }
-            .tabItem {
-                Label("Checklist", systemImage: "checklist")
-            }
-
-            NavigationStack {
                 HistoryView()
             }
             .tabItem {
                 Label("History", systemImage: "clock")
             }
-            
+
             NavigationStack {
                 PlacesListView()
             }
@@ -31,9 +24,9 @@ struct ContentView: View {
             }
 
             SettingsView()
-                .tabItem {
-                    Label("Settings", systemImage: "gearshape")
-                }
+            .tabItem {
+                Label("Settings", systemImage: "gearshape")
+            }
         }
     }
 }

@@ -84,10 +84,13 @@ final class PlacesViewModel: ObservableObject {
     }
 
     func deletePlaces(at offsets: IndexSet) {
-        let ids = offsets.map { places[$0].id }
-        for id in ids {
-            dataStore.deletePlace(id: id)
+        let placesToDelete = offsets.map { places[$0] }
+
+        for place in placesToDelete {
+            dataStore.deleteChecklistItems(for: place.id)
+            dataStore.deletePlace(id: place.id)
         }
+
         loadPlaces()
     }
 

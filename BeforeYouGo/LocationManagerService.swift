@@ -9,16 +9,16 @@ final class LocationManagerService: NSObject, ObservableObject {
     @Published var lastEventMessage: String = ""
 
     private let manager: CLLocationManager
-    private var regionNameMap: [String: String] = [:]
+    private var placeMap: [String: Place] = [:]
 
     private let historyStore: HistoryStore
     private let checklistViewModel: ChecklistViewModel
     private let notificationService: NotificationService
 
     init(
-        historyStore: HistoryStore,
-        checklistViewModel: ChecklistViewModel,
-        notificationService: NotificationService
+    historyStore: HistoryStore,
+    checklistViewModel: ChecklistViewModel,
+    notificationService: NotificationService
     ) {
         let locationManager = CLLocationManager()
         self.manager = locationManager
@@ -49,7 +49,7 @@ final class LocationManagerService: NSObject, ObservableObject {
             return
         }
 
-        regionNameMap[region.identifier] = place.name
+        placeMap[region.identifier] = place
         manager.startMonitoring(for: region)
         lastEventMessage = "Started monitoring \(place.name)"
         objectWillChange.send()
@@ -62,7 +62,7 @@ final class LocationManagerService: NSObject, ObservableObject {
         }
 
         manager.stopMonitoring(for: region)
-        regionNameMap.removeValue(forKey: region.identifier)
+        placeMap.removeValue(forKey: region.identifier)
         lastEventMessage = "Stopped monitoring \(place.name)"
         objectWillChange.send()
     }
@@ -72,7 +72,7 @@ final class LocationManagerService: NSObject, ObservableObject {
             manager.stopMonitoring(for: region)
         }
 
-        regionNameMap.removeAll()
+        placeMap.removeAll()
 
         for place in places where place.isEnabled {
             startMonitoring(for: place)
@@ -83,7 +83,7 @@ final class LocationManagerService: NSObject, ObservableObject {
 
     func circularRegion(for place: Place) -> CLCircularRegion? {
         guard let latitude = place.latitude,
-              let longitude = place.longitude else {
+        let longitude = place.longitude else {
             return nil
         }
 
@@ -108,24 +108,20 @@ final class LocationManagerService: NSObject, ObservableObject {
         manager.monitoredRegions.first(where: { $0.identifier == identifier })
     }
 
-    private func regionDisplayName(for identifier: String) -> String {
-        regionNameMap[identifier] ?? identifier
+    private func place(for identifier: String) -> Place? {
+        placeMap[identifier]
     }
 
-    private func enabledChecklistItems() -> [ChecklistItem] {
-        checklistViewModel.items.filter { $0.isEnabled }
-    }
-
-    private func sendExitReminder(for placeName: String) {
-        let enabledItems = enabledChecklistItems()
-        let checklistName = "\(placeName) Checklist"
+    private func sendExitReminder(for place: Place) {
+        let enabledItems = checklistViewModel.enabledItems(for: place.id)
+        let checklistName = "\(place.name) Checklist"
         let checklistTitles = enabledItems.map { $0.title }
 
         let notificationBody: String
         if checklistTitles.isEmpty {
-            notificationBody = "You left \(placeName). No enabled checklist items."
+            notificationBody = "You left \(place.name). No enabled checklist items."
         } else {
-            notificationBody = "You left \(placeName). Don’t forget: " + checklistTitles.joined(separator: ", ")
+            notificationBody = "You left \(place.name). Don’t forget: " + checklistTitles.joined(separator: ", ")
         }
 
         notificationService.sendNotification(
@@ -134,7 +130,7 @@ final class LocationManagerService: NSObject, ObservableObject {
         )
 
         historyStore.add(
-            placeName: placeName,
+            placeName: place.name,
             checklistName: checklistName,
             checklistItems: checklistTitles,
             exitTime: Date()
@@ -164,16 +160,25 @@ extension LocationManagerService: CLLocationManagerDelegate {
     }
 
     func locationManager(_ manager: CLLocationManager, didStartMonitoringFor region: CLRegion) {
-        lastEventMessage = "Started monitoring \(regionDisplayName(for: region.identifier))"
+        if let place = place(for: region.identifier) {
+            lastEventMessage = "Started monitoring \(place.name)"
+        } else {
+            lastEventMessage = "Started monitoring region"
+        }
         objectWillChange.send()
     }
 
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
-        let placeName = regionDisplayName(for: region.identifier)
-        lastEventMessage = "Exited region for \(placeName)"
+        guard let place = place(for: region.identifier) else {
+            lastEventMessage = "Exited unknown region"
+            objectWillChange.send()
+            return
+        }
+
+        lastEventMessage = "Exited region for \(place.name)"
         print("didExitRegion fired for: \(region.identifier)")
 
-        sendExitReminder(for: placeName)
+        sendExitReminder(for: place)
 
         objectWillChange.send()
     }

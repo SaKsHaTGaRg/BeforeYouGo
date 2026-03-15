@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ChecklistView: View {
+    let place: Place
+
     @EnvironmentObject var viewModel: ChecklistViewModel
     @State private var newItemText: String = ""
     @State private var expandedItemId: ChecklistItem.ID? = nil
@@ -32,9 +34,12 @@ struct ChecklistView: View {
                 .onMove(perform: viewModel.moveNotPinned)
             }
         }
-        .navigationTitle("Checklist")
+        .navigationTitle("\(place.name) Checklist")
         .toolbar {
             EditButton()
+        }
+        .onAppear {
+            viewModel.loadItems(for: place.id)
         }
     }
 
@@ -131,4 +136,3 @@ struct ChecklistView: View {
         }
     }
 }
-
