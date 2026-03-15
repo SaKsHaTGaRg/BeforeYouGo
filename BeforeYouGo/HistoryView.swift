@@ -131,6 +131,4 @@ struct HistoryRowView: View {
 
 #Preview {
     HistoryView()
-        .environmentObject(HistoryStore())
-        .environmentObject(ChecklistViewModel())
 }
