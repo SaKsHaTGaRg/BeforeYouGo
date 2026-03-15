@@ -1,107 +1,136 @@
-//
-//  HistoryView.swift
-//  BeforeYouGo
-//
-//  Created by Artem Basko on 2026-02-07.
-//
-
 import SwiftUI
+import UserNotifications
 
 struct HistoryView: View {
-    @StateObject private var store = HistoryStore()
+    @EnvironmentObject var historyStore: HistoryStore
+    @EnvironmentObject var checklistViewModel: ChecklistViewModel
+
+    private let notificationService = NotificationService()
 
     var body: some View {
-        List {
-            if store.events.isEmpty {
-                VStack(spacing: 10) {
-                    Image(systemName: "clock")
-                        .font(.system(size: 34))
-                        .foregroundStyle(.secondary)
-                    Text("No history yet")
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-            } else {
-                ForEach(store.events) { event in
-                    NavigationLink {
-                        HistoryDetailView(event: event)
-                    } label: {
-                        HistoryRow(event: event)
+        NavigationStack {
+            ZStack {
+                Color(.systemGray6)
+                    .ignoresSafeArea()
+
+                VStack(spacing: 16) {
+                    Button(action: simulateExitNotification) {
+                        Text("Simulate Exit Notification")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .cornerRadius(10)
                     }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
+                    .padding(.horizontal)
+                    .padding(.top)
+
+                    if historyStore.events.isEmpty {
+                        Spacer()
+
+                        Text("No history yet")
+                            .font(.headline)
+                            .foregroundColor(.gray)
+
+                        Spacer()
+                    } else {
+                        ScrollView {
+                            VStack(spacing: 16) {
+                                ForEach(historyStore.events) { event in
+                                    HistoryRowView(event: event)
+                                }
+                            }
+                            .padding()
+                        }
+                    }
                 }
             }
+            .navigationTitle("History")
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .listStyle(.plain)
-        .navigationTitle("History")
-        .toolbar {
-            if !store.events.isEmpty {
-                Button("Clear") {
-                    store.clear()
-                }
-            }
+    }
+
+    private func simulateExitNotification() {
+        let placeName = "Home"
+
+        let checklistTitles = checklistViewModel.items
+            .filter { $0.isEnabled }
+            .map { $0.title }
+
+        let bodyText: String
+        if checklistTitles.isEmpty {
+            bodyText = "You left \(placeName). No enabled checklist items."
+        } else {
+            bodyText = "You left \(placeName). Don’t forget: " + checklistTitles.joined(separator: ", ")
         }
-        .background(Color(.systemGroupedBackground))
+
+        notificationService.sendNotification(
+            title: "Checklist Reminder",
+            body: bodyText
+        )
+
+        historyStore.add(
+            placeName: placeName,
+            checklistName: "\(placeName) Checklist",
+            checklistItems: checklistTitles,
+            exitTime: Date()
+        )
     }
 }
 
-private struct HistoryRow: View {
+struct HistoryRowView: View {
     let event: HistoryEvent
 
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "clock")
-                .foregroundStyle(.secondary)
+    private var formattedTime: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        return formatter.string(from: event.exitTime)
+    }
 
-            VStack(alignment: .leading, spacing: 2) {
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "clock")
+                .font(.title3)
+                .foregroundColor(.gray)
+                .padding(.top, 2)
+
+            VStack(alignment: .leading, spacing: 4) {
                 Text(event.placeName)
                     .font(.headline)
+                    .foregroundColor(.black)
 
-                Text("Exited at \(event.exitTime.formatted(date: .omitted, time: .shortened))")
+                Text("Exited at \(formattedTime)")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.gray)
 
                 Text("Triggered: \(event.checklistName)")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.gray)
+
+                if !event.checklistItems.isEmpty {
+                    Text("Items: " + event.checklistItems.joined(separator: ", "))
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
             }
 
             Spacer()
 
             Image(systemName: "chevron.right")
-                .font(.footnote)
-                .foregroundStyle(.tertiary)
+                .foregroundColor(.gray)
         }
-        .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color(.systemBackground))
+        .padding()
+        .background(Color.white)
+        .overlay(
+            RoundedRectangle(cornerRadius: 0)
+                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
         )
-        .padding(.horizontal, 6)
-        .padding(.vertical, 4)
     }
 }
 
-private struct HistoryDetailView: View {
-    let event: HistoryEvent
-
-    var body: some View {
-        List {
-            Section("Exit") {
-                Text(event.placeName)
-                Text(event.exitTime.formatted(date: .abbreviated, time: .shortened))
-            }
-
-            Section("Checklist") {
-                Text(event.checklistName)
-                ForEach(event.checklistItems, id: \.self) { item in
-                    Text(item)
-                }
-            }
-        }
-        .navigationTitle("Details")
-    }
+#Preview {
+    HistoryView()
+        .environmentObject(HistoryStore())
+        .environmentObject(ChecklistViewModel())
 }
