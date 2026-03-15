@@ -4,6 +4,7 @@ import UserNotifications
 struct HistoryView: View {
     @EnvironmentObject var historyStore: HistoryStore
     @EnvironmentObject var checklistViewModel: ChecklistViewModel
+    @EnvironmentObject var vm: PlacesViewModel
 
     private let notificationService = NotificationService()
 
@@ -11,27 +12,35 @@ struct HistoryView: View {
         NavigationStack {
             ZStack {
                 Color(.systemGray6)
-                    .ignoresSafeArea()
+                .ignoresSafeArea()
 
                 VStack(spacing: 16) {
                     Button(action: simulateExitNotification) {
                         Text("Simulate Exit Notification")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .cornerRadius(10)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(10)
                     }
                     .padding(.horizontal)
                     .padding(.top)
+                    .disabled(vm.places.isEmpty)
+
+                    if vm.places.isEmpty {
+                        Text("Add a place first to simulate an exit notification.")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .padding(.horizontal)
+                    }
 
                     if historyStore.events.isEmpty {
                         Spacer()
 
                         Text("No history yet")
-                            .font(.headline)
-                            .foregroundColor(.gray)
+                        .font(.headline)
+                        .foregroundColor(.gray)
 
                         Spacer()
                     } else {
@@ -52,17 +61,17 @@ struct HistoryView: View {
     }
 
     private func simulateExitNotification() {
-        let placeName = "Home"
+        guard let place = vm.places.first else { return }
 
-        let checklistTitles = checklistViewModel.items
-            .filter { $0.isEnabled }
-            .map { $0.title }
+        let checklistTitles = checklistViewModel
+        .enabledItems(for: place.id)
+        .map { $0.title }
 
         let bodyText: String
         if checklistTitles.isEmpty {
-            bodyText = "You left \(placeName). No enabled checklist items."
+            bodyText = "You left \(place.name). No enabled checklist items."
         } else {
-            bodyText = "You left \(placeName). Don’t forget: " + checklistTitles.joined(separator: ", ")
+            bodyText = "You left \(place.name). Don’t forget: " + checklistTitles.joined(separator: ", ")
         }
 
         notificationService.sendNotification(
@@ -71,8 +80,8 @@ struct HistoryView: View {
         )
 
         historyStore.add(
-            placeName: placeName,
-            checklistName: "\(placeName) Checklist",
+            placeName: place.name,
+            checklistName: "\(place.name) Checklist",
             checklistItems: checklistTitles,
             exitTime: Date()
         )
@@ -91,46 +100,44 @@ struct HistoryRowView: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: "clock")
-                .font(.title3)
-                .foregroundColor(.gray)
-                .padding(.top, 2)
+            .font(.title3)
+            .foregroundColor(.gray)
+            .padding(.top, 2)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(event.placeName)
-                    .font(.headline)
-                    .foregroundColor(.black)
+                .font(.headline)
+                .foregroundColor(.black)
 
                 Text("Exited at \(formattedTime)")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+                .font(.subheadline)
+                .foregroundColor(.gray)
 
                 Text("Triggered: \(event.checklistName)")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+                .font(.subheadline)
+                .foregroundColor(.gray)
 
                 if !event.checklistItems.isEmpty {
                     Text("Items: " + event.checklistItems.joined(separator: ", "))
-                        .font(.caption)
-                        .foregroundColor(.gray)
+                    .font(.caption)
+                    .foregroundColor(.gray)
                 }
             }
 
             Spacer()
 
             Image(systemName: "chevron.right")
-                .foregroundColor(.gray)
+            .foregroundColor(.gray)
         }
         .padding()
         .background(Color.white)
         .overlay(
             RoundedRectangle(cornerRadius: 0)
-                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+            .stroke(Color.gray.opacity(0.2), lineWidth: 1)
         )
     }
 }
 
 #Preview {
     HistoryView()
-        .environmentObject(HistoryStore())
-        .environmentObject(ChecklistViewModel())
 }

@@ -10,7 +10,13 @@ import UserNotifications
 import Combine
 
 @MainActor
-final class NotificationService: ObservableObject {
+final class NotificationService: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
+
+    override init() {
+        super.init()
+        UNUserNotificationCenter.current().delegate = self
+    }
+
     func requestPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if let error = error {
@@ -27,16 +33,27 @@ final class NotificationService: ObservableObject {
         content.body = body
         content.sound = .default
 
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+
         let request = UNNotificationRequest(
             identifier: UUID().uuidString,
             content: content,
-            trigger: nil
+            trigger: trigger
         )
 
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print("Failed to schedule notification: \(error.localizedDescription)")
+            } else {
+                print("Notification scheduled successfully")
             }
         }
+    }
+
+    func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    willPresent notification: UNNotification
+    ) async -> UNNotificationPresentationOptions {
+        return [.banner, .sound, .badge]
     }
 }

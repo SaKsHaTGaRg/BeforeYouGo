@@ -31,13 +31,13 @@ struct PlacesListView: View {
             .sheet(isPresented: $showAddPlace) {
                 NavigationStack {
                     AddPlaceView()
-                        .environmentObject(vm)
+                    .environmentObject(vm)
                 }
             }
             .sheet(item: $editingPlace) { place in
                 NavigationStack {
                     AddPlaceView(existingPlace: place)
-                        .environmentObject(vm)
+                    .environmentObject(vm)
                 }
             }
             .alert("Location Permission Needed", isPresented: $showPermissionAlert) {
@@ -54,20 +54,20 @@ struct PlacesListView: View {
     private var headerBar: some View {
         HStack {
             Image(systemName: "gearshape")
-                .foregroundStyle(.white)
-                .padding(.leading, 12)
+            .foregroundStyle(.white)
+            .padding(.leading, 12)
 
             Spacer()
 
             Text("Places")
-                .font(.headline)
-                .foregroundStyle(.white)
+            .font(.headline)
+            .foregroundStyle(.white)
 
             Spacer()
 
             Text("History")
-                .foregroundStyle(.white.opacity(0.8))
-                .padding(.trailing, 12)
+            .foregroundStyle(.white.opacity(0.8))
+            .padding(.trailing, 12)
         }
         .frame(height: 48)
         .background(Color.blue)
@@ -78,17 +78,17 @@ struct PlacesListView: View {
             Spacer()
 
             Image(systemName: "mappin.and.ellipse")
-                .font(.system(size: 48))
-                .foregroundStyle(.blue)
+            .font(.system(size: 48))
+            .foregroundStyle(.blue)
 
             Text("No places added yet")
-                .font(.headline)
+            .font(.headline)
 
             Text("Tap the button below to add your first place.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 32)
 
             Spacer()
         }
@@ -97,43 +97,51 @@ struct PlacesListView: View {
     private var placesList: some View {
         List {
             ForEach(vm.places) { place in
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(place.name)
+                NavigationLink {
+                    ChecklistView(place: place)
+                } label: {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(place.name)
                             .font(.headline)
 
-                        Text("Radius: \(Int(place.radiusMeters)) m")
+                            Text("Radius: \(Int(place.radiusMeters)) m")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
 
-                        if let address = place.address, !address.isEmpty {
-                            Text(address)
+                            if let address = place.address, !address.isEmpty {
+                                Text(address)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(2)
+                            }
+
+                            monitoringStatusText(for: place)
                         }
 
-                        monitoringStatusText(for: place)
-                    }
+                        Spacer()
 
-                    Spacer()
+                        Button {
+                            editingPlace = place
+                        } label: {
+                            Image(systemName: "pencil")
+                            .foregroundStyle(.blue)
+                        }
+                        .buttonStyle(.plain)
 
-                    Toggle(
-                        "",
-                        isOn: Binding(
-                            get: { place.isEnabled },
-                            set: { newValue in
-                                handleToggleChange(for: place, newValue: newValue)
-                            }
+                        Toggle(
+                            "",
+                            isOn: Binding(
+                                get: { place.isEnabled },
+                                set: { newValue in
+                                    handleToggleChange(for: place, newValue: newValue)
+                                }
+                            )
                         )
-                    )
-                    .labelsHidden()
+                        .labelsHidden()
+                    }
+                    .padding(.vertical, 4)
                 }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    editingPlace = place
-                }
-                .padding(.vertical, 4)
             }
             .onDelete(perform: deletePlaces)
         }
@@ -144,29 +152,29 @@ struct PlacesListView: View {
     private func monitoringStatusText(for place: Place) -> some View {
         if !place.hasCoordinates {
             Text("No coordinates saved")
-                .font(.caption2)
-                .foregroundStyle(.orange)
+            .font(.caption2)
+            .foregroundStyle(.orange)
         } else if locationService.isMonitoring(place) {
             Text("Monitoring active")
-                .font(.caption2)
-                .foregroundStyle(.green)
+            .font(.caption2)
+            .foregroundStyle(.green)
         } else if place.isEnabled {
             Text("Enabled, not currently monitored")
-                .font(.caption2)
-                .foregroundStyle(.orange)
+            .font(.caption2)
+            .foregroundStyle(.orange)
         } else {
             Text("Monitoring off")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+            .font(.caption2)
+            .foregroundStyle(.secondary)
         }
     }
 
     private var statusBanner: some View {
         Text(locationService.lastEventMessage)
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, 16)
-            .padding(.bottom, 8)
+        .font(.caption)
+        .foregroundStyle(.secondary)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 8)
     }
 
     private var addPlaceButton: some View {
