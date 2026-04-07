@@ -19,11 +19,13 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
 
     func requestPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-            if let error = error {
-                print("Notification permission error: \(error.localizedDescription)")
+            #if DEBUG
+            if let error {
+                print("[NotificationService] Permission error: \(error.localizedDescription)")
             } else {
-                print("Notification permission granted: \(granted)")
+                print("[NotificationService] Permission granted: \(granted)")
             }
+            #endif
         }
     }
 
@@ -42,18 +44,20 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
         )
 
         UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
-                print("Failed to schedule notification: \(error.localizedDescription)")
+            #if DEBUG
+            if let error {
+                print("[NotificationService] Failed to schedule notification: \(error.localizedDescription)")
             } else {
-                print("Notification scheduled successfully")
+                print("[NotificationService] Notification scheduled successfully")
             }
+            #endif
         }
     }
 
     func userNotificationCenter(
-    _ center: UNUserNotificationCenter,
-    willPresent notification: UNNotification
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
-        return [.banner, .sound, .badge]
+        [.banner, .sound, .badge]
     }
 }
