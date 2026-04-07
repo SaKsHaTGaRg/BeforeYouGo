@@ -9,7 +9,6 @@ import SwiftUI
 
 struct SettingsView: View {
     @AppStorage("settings.soundEnabled") private var soundEnabled: Bool = true
-    @AppStorage("settings.vibrationEnabled") private var vibrationEnabled: Bool = true
 
     var body: some View {
         NavigationStack {
@@ -25,15 +24,6 @@ struct SettingsView: View {
                             .labelsHidden()
                     }
 
-                    HStack {
-                        Image(systemName: "bell.fill")
-                            .foregroundStyle(.secondary)
-                            .frame(width: 24)
-                        Text("Vibration")
-                        Spacer()
-                        Toggle("", isOn: $vibrationEnabled)
-                            .labelsHidden()
-                    }
                 }
 
                 Section("Location Permissions") {

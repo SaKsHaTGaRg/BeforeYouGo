@@ -17,6 +17,7 @@ struct Place: Identifiable, Codable, Equatable {
     var latitude: Double?
     var longitude: Double?
     var locationSource: LocationSource
+    var reminderMessage: String?
 
     init(
         id: UUID = UUID(),
@@ -26,7 +27,8 @@ struct Place: Identifiable, Codable, Equatable {
         address: String? = nil,
         latitude: Double? = nil,
         longitude: Double? = nil,
-        locationSource: LocationSource = .unknown
+        locationSource: LocationSource = .unknown,
+        reminderMessage: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -36,6 +38,7 @@ struct Place: Identifiable, Codable, Equatable {
         self.latitude = latitude
         self.longitude = longitude
         self.locationSource = locationSource
+        self.reminderMessage = reminderMessage
     }
 
     var hasCoordinates: Bool {

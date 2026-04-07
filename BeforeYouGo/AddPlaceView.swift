@@ -24,6 +24,7 @@ struct AddPlaceView: View {
     @State private var selectedLongitude: Double?
     @State private var selectedAddress: String
     @State private var selectedSource: Place.LocationSource
+    @State private var reminderMessage: String
 
     @State private var showMapPicker = false
     @State private var locationError: String?
@@ -40,6 +41,7 @@ struct AddPlaceView: View {
         _selectedLongitude = State(initialValue: existingPlace?.longitude)
         _selectedAddress = State(initialValue: existingPlace?.address ?? "")
         _selectedSource = State(initialValue: existingPlace?.locationSource ?? .unknown)
+        _reminderMessage = State(initialValue: existingPlace?.reminderMessage ?? "")
     }
 
     private var canSave: Bool {
@@ -104,6 +106,11 @@ struct AddPlaceView: View {
                     }
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                }
+
+                Section("Reminder Message") {
+                    TextField("You left \(placeName.isEmpty ? "this place" : placeName)", text: $reminderMessage, axis: .vertical)
+                        .lineLimit(2...4)
                 }
 
                 Section("Selected Location") {
@@ -271,7 +278,8 @@ struct AddPlaceView: View {
                 address: selectedAddress.isEmpty ? nil : selectedAddress,
                 latitude: lat,
                 longitude: lon,
-                locationSource: selectedSource
+                locationSource: selectedSource,
+                reminderMessage: reminderMessage
             )
 
             if existingPlace.isEnabled {
@@ -288,7 +296,8 @@ struct AddPlaceView: View {
                 address: selectedAddress.isEmpty ? nil : selectedAddress,
                 latitude: lat,
                 longitude: lon,
-                locationSource: selectedSource
+                locationSource: selectedSource,
+                reminderMessage: reminderMessage
             )
         }
 

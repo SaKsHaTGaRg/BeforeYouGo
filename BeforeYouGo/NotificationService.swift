@@ -33,7 +33,9 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
-        content.sound = .default
+        if soundEnabled {
+            content.sound = .default
+        }
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
 
@@ -58,6 +60,10 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
-        [.banner, .sound, .badge]
+        soundEnabled ? [.banner, .sound, .badge] : [.banner, .badge]
+    }
+
+    private var soundEnabled: Bool {
+        UserDefaults.standard.object(forKey: "settings.soundEnabled") as? Bool ?? true
     }
 }

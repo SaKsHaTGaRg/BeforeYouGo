@@ -196,24 +196,34 @@ struct PlacesListView: View {
     }
 
     private func handleToggleChange(for place: Place, newValue: Bool) {
-
         if newValue {
-            if locationService.authorizationStatus == .denied ||
-               locationService.authorizationStatus == .restricted {
+            switch locationService.authorizationStatus {
+            case .denied, .restricted:
+                showPermissionAlert = true
+                return
 
+            case .notDetermined:
+                locationService.requestPermission()
+                showPermissionAlert = true
+                return
+
+            case .authorizedWhenInUse, .authorizedAlways:
+                break
+
+            @unknown default:
                 showPermissionAlert = true
                 return
             }
 
-            vm.togglePlace(place)
+            let started = locationService.startMonitoring(for: place)
 
-            if let updated = vm.places.first(where: { $0.id == place.id }) {
-                locationService.startMonitoring(for: updated)
+            if started {
+                vm.togglePlace(place)
             }
 
         } else {
-            vm.togglePlace(place)
             locationService.stopMonitoring(for: place)
+            vm.togglePlace(place)
         }
     }
 

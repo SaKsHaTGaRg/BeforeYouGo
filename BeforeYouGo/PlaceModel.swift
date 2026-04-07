@@ -18,6 +18,7 @@ final class PlaceModel {
     var latitude: Double?
     var longitude: Double?
     var locationSourceRaw: String
+    var reminderMessage: String?
 
     init(
     id: UUID = UUID(),
@@ -27,7 +28,8 @@ final class PlaceModel {
     address: String? = nil,
     latitude: Double? = nil,
     longitude: Double? = nil,
-    locationSourceRaw: String = Place.LocationSource.unknown.rawValue
+    locationSourceRaw: String = Place.LocationSource.unknown.rawValue,
+    reminderMessage: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -37,6 +39,7 @@ final class PlaceModel {
         self.latitude = latitude
         self.longitude = longitude
         self.locationSourceRaw = locationSourceRaw
+        self.reminderMessage = reminderMessage
     }
 
     var hasCoordinates: Bool {
@@ -59,7 +62,8 @@ extension PlaceModel {
             address: address,
             latitude: latitude,
             longitude: longitude,
-            locationSource: locationSource
+            locationSource: locationSource,
+            reminderMessage: reminderMessage
         )
     }
 
@@ -72,6 +76,7 @@ extension PlaceModel {
         latitude = place.latitude
         longitude = place.longitude
         locationSource = place.locationSource
+        reminderMessage = place.reminderMessage
     }
 }
 
@@ -85,7 +90,8 @@ extension Place {
             address: address,
             latitude: latitude,
             longitude: longitude,
-            locationSourceRaw: locationSource.rawValue
+            locationSourceRaw: locationSource.rawValue,
+            reminderMessage: reminderMessage
         )
     }
 }
