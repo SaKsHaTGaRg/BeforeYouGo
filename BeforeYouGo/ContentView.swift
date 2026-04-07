@@ -1,0 +1,36 @@
+//
+//  ContentView.swift
+//  BeforeYouGo
+//
+//  Created by Sakshat Garg on 2026-02-01.
+//
+import SwiftUI
+
+struct ContentView: View {
+    var body: some View {
+        TabView {
+            NavigationStack {
+                HistoryView()
+            }
+            .tabItem {
+                Label("History", systemImage: "clock")
+            }
+
+            NavigationStack {
+                PlacesListView()
+            }
+            .tabItem {
+                Label("Places", systemImage: "map")
+            }
+
+            SettingsView()
+            .tabItem {
+                Label("Settings", systemImage: "gearshape")
+            }
+        }
+    }
+}
+
+#Preview {
+    ContentView()
+}
