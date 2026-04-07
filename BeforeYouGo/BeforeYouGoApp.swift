@@ -9,6 +9,7 @@ struct BeforeYouGoApp: App {
     @StateObject private var historyStore: HistoryStore
     @StateObject private var checklistViewModel: ChecklistViewModel
     @StateObject private var locationService: LocationManagerService
+    @StateObject private var notificationService: NotificationService
 
     init() {
         do {
@@ -32,8 +33,10 @@ struct BeforeYouGoApp: App {
         _vm = StateObject(wrappedValue: placesVM)
         _historyStore = StateObject(wrappedValue: historyStore)
         _checklistViewModel = StateObject(wrappedValue: checklistVM)
+        _notificationService = StateObject(wrappedValue: notificationService)
         _locationService = StateObject(
             wrappedValue: LocationManagerService(
+                dataStore: dataStore,
                 historyStore: historyStore,
                 checklistViewModel: checklistVM,
                 notificationService: notificationService
@@ -48,6 +51,7 @@ struct BeforeYouGoApp: App {
                 .environmentObject(historyStore)
                 .environmentObject(checklistViewModel)
                 .environmentObject(locationService)
+                .environmentObject(notificationService)
                 .onAppear {
                     locationService.syncMonitoring(with: vm.places)
                 }

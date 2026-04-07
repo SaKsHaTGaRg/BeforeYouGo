@@ -11,18 +11,21 @@ final class LocationManagerService: NSObject, ObservableObject {
     private let manager: CLLocationManager
     private var placeMap: [String: Place] = [:]
 
+    private let dataStore: AppDataStore
     private let historyStore: HistoryStore
     private let checklistViewModel: ChecklistViewModel
     private let notificationService: NotificationService
 
     init(
-        historyStore: HistoryStore,
-        checklistViewModel: ChecklistViewModel,
-        notificationService: NotificationService
+    dataStore: AppDataStore,
+    historyStore: HistoryStore,
+    checklistViewModel: ChecklistViewModel,
+    notificationService: NotificationService
     ) {
         let locationManager = CLLocationManager()
         self.manager = locationManager
         self.authorizationStatus = locationManager.authorizationStatus
+        self.dataStore = dataStore
         self.historyStore = historyStore
         self.checklistViewModel = checklistViewModel
         self.notificationService = notificationService
@@ -31,12 +34,7 @@ final class LocationManagerService: NSObject, ObservableObject {
 
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
-
-        // Safeguard: only enable background updates if the app has the capability configured
-        if let backgroundModes = Bundle.main.object(forInfoDictionaryKey: "UIBackgroundModes") as? [String],
-           backgroundModes.contains("location") {
-            locationManager.allowsBackgroundLocationUpdates = true
-        }
+        locationManager.allowsBackgroundLocationUpdates = true
     }
 
     // MARK: - Permissions
@@ -57,28 +55,45 @@ final class LocationManagerService: NSObject, ObservableObject {
         restartMonitoring(for: places)
     }
 
-    func startMonitoring(for place: Place) {
-        guard authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse else {
+    @discardableResult
+    func startMonitoring(for place: Place) -> Bool {
+        switch authorizationStatus {
+        case .notDetermined:
+            requestPermission()
+            lastEventMessage = "Allow location permission first, then enable the place again."
+            return false
+
+        case .restricted, .denied:
             lastEventMessage = "Permission not granted"
-            return
+            return false
+
+        case .authorizedWhenInUse:
+            requestAlwaysPermissionIfNeeded()
+            lastEventMessage = "Please allow Always Location to enable geofence monitoring."
+            return false
+
+        case .authorizedAlways:
+            break
+
+        @unknown default:
+            lastEventMessage = "Unknown permission state"
+            return false
         }
 
         guard let region = circularRegion(for: place) else {
             lastEventMessage = "Missing coordinates for \(place.name)"
-            return
+            return false
         }
 
         guard CLLocationManager.isMonitoringAvailable(for: CLCircularRegion.self) else {
             lastEventMessage = "Monitoring not available"
-            return
+            return false
         }
 
         placeMap[region.identifier] = place
         manager.startMonitoring(for: region)
-
-        requestAlwaysPermissionIfNeeded()
-
         lastEventMessage = "Started monitoring \(place.name)"
+        return true
     }
 
     func stopMonitoring(for place: Place) {
@@ -86,7 +101,6 @@ final class LocationManagerService: NSObject, ObservableObject {
 
         manager.stopMonitoring(for: region)
         placeMap.removeValue(forKey: region.identifier)
-
         lastEventMessage = "Stopped monitoring \(place.name)"
     }
 
@@ -98,7 +112,7 @@ final class LocationManagerService: NSObject, ObservableObject {
         placeMap.removeAll()
 
         for place in places where place.isEnabled {
-            startMonitoring(for: place)
+            _ = startMonitoring(for: place)
         }
     }
 
@@ -106,7 +120,7 @@ final class LocationManagerService: NSObject, ObservableObject {
 
     func circularRegion(for place: Place) -> CLCircularRegion? {
         guard let lat = place.latitude,
-              let lon = place.longitude else { return nil }
+        let lon = place.longitude else { return nil }
 
         let region = CLCircularRegion(
             center: CLLocationCoordinate2D(latitude: lat, longitude: lon),
@@ -126,18 +140,20 @@ final class LocationManagerService: NSObject, ObservableObject {
         manager.monitoredRegions.first { $0.identifier == identifier }
     }
 
+    private func persistedPlace(for regionIdentifier: String) -> Place? {
+        dataStore.fetchPlaces().first { $0.id.uuidString == regionIdentifier }
+    }
+
     private func sendExitReminder(for place: Place) {
         let items = checklistViewModel.enabledItems(for: place.id)
         let titles = items.map { $0.title }
 
-        let body = titles.isEmpty
-            ? "You left \(place.name)"
-            : "You left \(place.name). Don’t forget: \(titles.joined(separator: ", "))"
-
-        notificationService.sendNotification(
-            title: "Reminder",
-            body: body
-        )
+        if let reminder = ReminderBuilder.build(for: place, items: items) {
+            notificationService.sendNotification(
+                title: reminder.title,
+                body: reminder.body
+            )
+        }
 
         historyStore.add(
             placeName: place.name,
@@ -157,22 +173,33 @@ extension LocationManagerService: CLLocationManagerDelegate {
         case .authorizedAlways:
             lastEventMessage = "Always permission granted"
         case .authorizedWhenInUse:
-            lastEventMessage = "While Using App permission"
+            lastEventMessage = "While Using App permission granted. Enable Always Location for geofence monitoring."
         case .denied:
             lastEventMessage = "Permission denied"
-        default:
-            break
+        case .restricted:
+            lastEventMessage = "Location access restricted"
+        case .notDetermined:
+            lastEventMessage = "Location permission not decided yet"
+        @unknown default:
+            lastEventMessage = "Unknown permission state"
         }
     }
 
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
-        guard let place = placeMap[region.identifier] else {
-            lastEventMessage = "Unknown region triggered"
+        if let place = placeMap[region.identifier] {
+            lastEventMessage = "Exited \(place.name)"
+            sendExitReminder(for: place)
             return
         }
 
-        lastEventMessage = "Exited \(place.name)"
-        sendExitReminder(for: place)
+        if let recoveredPlace = persistedPlace(for: region.identifier) {
+            placeMap[region.identifier] = recoveredPlace
+            lastEventMessage = "Exited \(recoveredPlace.name)"
+            sendExitReminder(for: recoveredPlace)
+            return
+        }
+
+        lastEventMessage = "Unknown region triggered"
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
@@ -180,8 +207,11 @@ extension LocationManagerService: CLLocationManagerDelegate {
     }
 
     func locationManager(_ manager: CLLocationManager,
-                         monitoringDidFailFor region: CLRegion?,
-                         withError error: Error) {
+    monitoringDidFailFor region: CLRegion?,
+    withError error: Error) {
+        if let region {
+            placeMap.removeValue(forKey: region.identifier)
+        }
         lastEventMessage = "Monitoring failed: \(error.localizedDescription)"
     }
 }

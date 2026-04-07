@@ -18,10 +18,12 @@ final class PlacesViewModel: ObservableObject {
     address: String? = nil,
     latitude: Double? = nil,
     longitude: Double? = nil,
-    locationSource: Place.LocationSource = .unknown
+    locationSource: Place.LocationSource = .unknown,
+    reminderMessage: String? = nil
     ) {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { return }
+        let trimmedReminder = reminderMessage?.trimmingCharacters(in: .whitespacesAndNewlines)
 
         let newPlace = Place(
             name: trimmedName,
@@ -30,7 +32,8 @@ final class PlacesViewModel: ObservableObject {
             address: address,
             latitude: latitude,
             longitude: longitude,
-            locationSource: locationSource
+            locationSource: locationSource,
+            reminderMessage: trimmedReminder?.isEmpty == true ? nil : trimmedReminder
         )
 
         dataStore.savePlace(newPlace)
@@ -44,11 +47,13 @@ final class PlacesViewModel: ObservableObject {
     address: String? = nil,
     latitude: Double? = nil,
     longitude: Double? = nil,
-    locationSource: Place.LocationSource = .unknown
+    locationSource: Place.LocationSource = .unknown,
+    reminderMessage: String? = nil
     ) {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { return }
         guard let existing = places.first(where: { $0.id == id }) else { return }
+        let trimmedReminder = reminderMessage?.trimmingCharacters(in: .whitespacesAndNewlines)
 
         let updated = Place(
             id: existing.id,
@@ -58,7 +63,8 @@ final class PlacesViewModel: ObservableObject {
             address: address,
             latitude: latitude,
             longitude: longitude,
-            locationSource: locationSource
+            locationSource: locationSource,
+            reminderMessage: trimmedReminder?.isEmpty == true ? nil : trimmedReminder
         )
 
         dataStore.savePlace(updated)
@@ -76,7 +82,8 @@ final class PlacesViewModel: ObservableObject {
             address: existing.address,
             latitude: existing.latitude,
             longitude: existing.longitude,
-            locationSource: existing.locationSource
+            locationSource: existing.locationSource,
+            reminderMessage: existing.reminderMessage
         )
 
         dataStore.savePlace(updated)
