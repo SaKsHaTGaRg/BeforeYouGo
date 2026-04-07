@@ -16,13 +16,20 @@ final class AppDataStore {
         self.context = context
     }
 
-    // PLACES
+    // MARK: - PLACES
+
     func fetchPlaces() -> [Place] {
         let descriptor = FetchDescriptor<PlaceModel>(
             sortBy: [SortDescriptor(\.name)]
         )
-        let models = (try? context.fetch(descriptor)) ?? []
-        return models.map { $0.toPlace() }
+
+        do {
+            let models = try context.fetch(descriptor)
+            return models.map { $0.toPlace() }
+        } catch {
+            debugLog("Failed to fetch places: \(error.localizedDescription)")
+            return []
+        }
     }
 
     func savePlace(_ place: Place) {
@@ -32,14 +39,19 @@ final class AppDataStore {
             predicate: #Predicate { $0.id == placeID }
         )
 
-        if let models = try? context.fetch(descriptor),
-        let existing = models.first {
-            existing.update(from: place)
-        } else {
-            context.insert(place.toModel())
-        }
+        do {
+            let models = try context.fetch(descriptor)
 
-        try? context.save()
+            if let existing = models.first {
+                existing.update(from: place)
+            } else {
+                context.insert(place.toModel())
+            }
+
+            try context.save()
+        } catch {
+            debugLog("Failed to save place \(place.name): \(error.localizedDescription)")
+        }
     }
 
     func deletePlace(id: UUID) {
@@ -49,14 +61,20 @@ final class AppDataStore {
             predicate: #Predicate { $0.id == placeID }
         )
 
-        if let models = try? context.fetch(descriptor),
-        let model = models.first {
-            context.delete(model)
-            try? context.save()
+        do {
+            let models = try context.fetch(descriptor)
+
+            if let model = models.first {
+                context.delete(model)
+                try context.save()
+            }
+        } catch {
+            debugLog("Failed to delete place \(id): \(error.localizedDescription)")
         }
     }
 
-    // CHECKLIST
+    // MARK: - CHECKLIST
+
     func fetchChecklistItems(for placeId: UUID) -> [ChecklistItem] {
         let pid = placeId
 
@@ -65,8 +83,13 @@ final class AppDataStore {
             sortBy: [SortDescriptor(\.sortOrder)]
         )
 
-        let models = (try? context.fetch(descriptor)) ?? []
-        return models.map { $0.toChecklistItem() }
+        do {
+            let models = try context.fetch(descriptor)
+            return models.map { $0.toChecklistItem() }
+        } catch {
+            debugLog("Failed to fetch checklist items for place \(placeId): \(error.localizedDescription)")
+            return []
+        }
     }
 
     func fetchEnabledChecklistItems(for placeId: UUID) -> [ChecklistItem] {
@@ -80,21 +103,31 @@ final class AppDataStore {
             predicate: #Predicate { $0.id == itemID }
         )
 
-        if let models = try? context.fetch(descriptor),
-        let existing = models.first {
-            existing.update(from: item)
-        } else {
-            context.insert(item.toModel())
-        }
+        do {
+            let models = try context.fetch(descriptor)
 
-        try? context.save()
+            if let existing = models.first {
+                existing.update(from: item)
+            } else {
+                context.insert(item.toModel())
+            }
+
+            try context.save()
+        } catch {
+            debugLog("Failed to save checklist item \(item.title): \(error.localizedDescription)")
+        }
     }
 
     func saveChecklistItems(_ items: [ChecklistItem]) {
         for item in items {
             saveChecklistItem(item)
         }
-        try? context.save()
+
+        do {
+            try context.save()
+        } catch {
+            debugLog("Failed to save checklist items batch: \(error.localizedDescription)")
+        }
     }
 
     func deleteChecklistItem(id: UUID) {
@@ -104,10 +137,15 @@ final class AppDataStore {
             predicate: #Predicate { $0.id == itemID }
         )
 
-        if let models = try? context.fetch(descriptor),
-        let model = models.first {
-            context.delete(model)
-            try? context.save()
+        do {
+            let models = try context.fetch(descriptor)
+
+            if let model = models.first {
+                context.delete(model)
+                try context.save()
+            }
+        } catch {
+            debugLog("Failed to delete checklist item \(id): \(error.localizedDescription)")
         }
     }
 
@@ -118,36 +156,66 @@ final class AppDataStore {
             predicate: #Predicate { $0.placeId == pid }
         )
 
-        let models = (try? context.fetch(descriptor)) ?? []
-        for model in models {
-            context.delete(model)
-        }
+        do {
+            let models = try context.fetch(descriptor)
 
-        try? context.save()
+            for model in models {
+                context.delete(model)
+            }
+
+            try context.save()
+        } catch {
+            debugLog("Failed to delete checklist items for place \(placeId): \(error.localizedDescription)")
+        }
     }
 
-    // HISTORY
+    // MARK: - HISTORY
+
     func fetchHistoryEvents() -> [HistoryEvent] {
         let descriptor = FetchDescriptor<HistoryEventModel>(
             sortBy: [SortDescriptor(\.exitTime, order: .reverse)]
         )
-        let models = (try? context.fetch(descriptor)) ?? []
-        return models.map { $0.toHistoryEvent() }
+
+        do {
+            let models = try context.fetch(descriptor)
+            return models.map { $0.toHistoryEvent() }
+        } catch {
+            debugLog("Failed to fetch history events: \(error.localizedDescription)")
+            return []
+        }
     }
 
     func saveHistoryEvent(_ event: HistoryEvent) {
         context.insert(event.toModel())
-        try? context.save()
+
+        do {
+            try context.save()
+        } catch {
+            debugLog("Failed to save history event for \(event.placeName): \(error.localizedDescription)")
+        }
     }
 
     func clearHistory() {
         let descriptor = FetchDescriptor<HistoryEventModel>()
-        let models = (try? context.fetch(descriptor)) ?? []
 
-        for model in models {
-            context.delete(model)
+        do {
+            let models = try context.fetch(descriptor)
+
+            for model in models {
+                context.delete(model)
+            }
+
+            try context.save()
+        } catch {
+            debugLog("Failed to clear history: \(error.localizedDescription)")
         }
+    }
 
-        try? context.save()
+    // MARK: - Debug
+
+    private func debugLog(_ message: String) {
+        #if DEBUG
+        print("[AppDataStore] \(message)")
+        #endif
     }
 }

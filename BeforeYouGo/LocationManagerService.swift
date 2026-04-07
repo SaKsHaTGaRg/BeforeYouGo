@@ -32,8 +32,11 @@ final class LocationManagerService: NSObject, ObservableObject {
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
 
-        // ✅ background support
-        locationManager.allowsBackgroundLocationUpdates = true
+        // Safeguard: only enable background updates if the app has the capability configured
+        if let backgroundModes = Bundle.main.object(forInfoDictionaryKey: "UIBackgroundModes") as? [String],
+           backgroundModes.contains("location") {
+            locationManager.allowsBackgroundLocationUpdates = true
+        }
     }
 
     // MARK: - Permissions
@@ -73,7 +76,6 @@ final class LocationManagerService: NSObject, ObservableObject {
         placeMap[region.identifier] = place
         manager.startMonitoring(for: region)
 
-        // upgrade permission
         requestAlwaysPermissionIfNeeded()
 
         lastEventMessage = "Started monitoring \(place.name)"
@@ -106,11 +108,14 @@ final class LocationManagerService: NSObject, ObservableObject {
         guard let lat = place.latitude,
               let lon = place.longitude else { return nil }
 
-        return CLCircularRegion(
+        let region = CLCircularRegion(
             center: CLLocationCoordinate2D(latitude: lat, longitude: lon),
             radius: max(50, min(place.radiusMeters, 1000)),
             identifier: place.id.uuidString
         )
+        region.notifyOnEntry = false
+        region.notifyOnExit = true
+        return region
     }
 
     func isMonitoring(_ place: Place) -> Bool {
