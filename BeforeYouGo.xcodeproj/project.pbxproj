@@ -10,9 +10,22 @@
 		E5C98CBC2F30082200664210 /* BeforeYouGo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BeforeYouGo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		2A6D1C312F85C01D003D0F4E /* Exceptions for "BeforeYouGo" folder in "BeforeYouGo" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = E5C98CBB2F30082200664210 /* BeforeYouGo */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E5C98CBE2F30082200664210 /* BeforeYouGo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				2A6D1C312F85C01D003D0F4E /* Exceptions for "BeforeYouGo" folder in "BeforeYouGo" target */,
+			);
 			path = BeforeYouGo;
 			sourceTree = "<group>";
 		};
@@ -253,6 +266,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BeforeYouGo/Info.plist;
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "This app needs location access to remind you when leaving places.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Before You Go uses your location so you can save places.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -287,6 +301,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BeforeYouGo/Info.plist;
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "This app needs location access to remind you when leaving places.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Before You Go uses your location so you can save places.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
