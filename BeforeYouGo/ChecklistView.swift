@@ -1,6 +1,6 @@
 //
 //  ChecklistView.swift
-//  
+//
 //
 //  Created by Ivan Barnash on 2026-02-02.
 //
@@ -14,9 +14,27 @@ struct ChecklistView: View {
     @State private var newItemText: String = ""
     @State private var expandedItemId: ChecklistItem.ID? = nil
 
+    private var hasNoItems: Bool {
+        viewModel.pinned.isEmpty && viewModel.notPinned.isEmpty
+    }
+
     var body: some View {
         List {
             addRow
+
+            if hasNoItems {
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("No checklist items yet")
+                            .font(.headline)
+
+                        Text("Add items you want to remember when leaving this place.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 8)
+                }
+            }
 
             if !viewModel.pinned.isEmpty {
                 Section("Pinned reminders") {
@@ -46,17 +64,17 @@ struct ChecklistView: View {
     private var addRow: some View {
         HStack {
             TextField("New item", text: $newItemText)
-            .textFieldStyle(RoundedBorderTextFieldStyle())
-            .autocapitalization(.none)
-            .padding()
-            .submitLabel(.done)
-            .onSubmit(addItem)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .autocapitalization(.none)
+                .padding()
+                .submitLabel(.done)
+                .onSubmit(addItem)
 
             Button {
                 addItem()
             } label: {
                 Image(systemName: "plus.circle.fill")
-                .font(.title3)
+                    .font(.title3)
             }
             .disabled(newItemText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         }
@@ -74,12 +92,12 @@ struct ChecklistView: View {
                     viewModel.toggleEnabled(item)
                 } label: {
                     Image(systemName: item.isEnabled ? "checkmark.circle.fill" : "circle")
-                    .font(.title3)
+                        .font(.title3)
                 }
                 .buttonStyle(.plain)
 
                 Text(item.title)
-                .foregroundStyle(item.isEnabled ? .primary : .secondary)
+                    .foregroundStyle(item.isEnabled ? .primary : .secondary)
 
                 Spacer()
 
@@ -96,8 +114,8 @@ struct ChecklistView: View {
                     }
                 } label: {
                     Image(systemName: expandedItemId == item.id ? "chevron.up" : "chevron.down")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
             }
@@ -105,8 +123,8 @@ struct ChecklistView: View {
             if expandedItemId == item.id {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Notification message")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
 
                     TextField(
                         "Don't forget your \(item.title)!",
@@ -120,8 +138,8 @@ struct ChecklistView: View {
                     .lineLimit(2...4)
 
                     Text("Preview \(item.notification)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
                 .padding()
             }
