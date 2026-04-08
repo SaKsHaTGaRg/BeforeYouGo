@@ -1,5 +1,5 @@
 import SwiftUI
- import CoreLocation
+import CoreLocation
 
 struct PlacesListView: View {
     @EnvironmentObject var vm: PlacesViewModel
@@ -10,67 +10,41 @@ struct PlacesListView: View {
     @State private var showPermissionAlert = false
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                headerBar
-
-                if vm.places.isEmpty {
-                    emptyStateView
-                } else {
-                    placesList
-                }
-
-                if !locationService.lastEventMessage.isEmpty {
-                    statusBanner
-                }
-
-                addPlaceButton
+        VStack(spacing: 0) {
+            if vm.places.isEmpty {
+                emptyStateView
+            } else {
+                placesList
             }
-            .background(Color(.systemGroupedBackground))
-            .navigationBarHidden(true)
-            .sheet(isPresented: $showAddPlace) {
-                NavigationStack {
-                    AddPlaceView()
+
+            if !locationService.lastEventMessage.isEmpty {
+                statusBanner
+            }
+
+            addPlaceButton
+        }
+        .background(Color(.systemGroupedBackground))
+        .navigationTitle("Places")
+        .sheet(isPresented: $showAddPlace) {
+            NavigationStack {
+                AddPlaceView()
                     .environmentObject(vm)
-                }
-            }
-            .sheet(item: $editingPlace) { place in
-                NavigationStack {
-                    AddPlaceView(existingPlace: place)
-                    .environmentObject(vm)
-                }
-            }
-            .alert("Location Permission Needed", isPresented: $showPermissionAlert) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text("Please allow location access so region monitoring can work.")
-            }
-            .onAppear {
-                locationService.restartMonitoring(for: vm.places)
             }
         }
-    }
-
-    private var headerBar: some View {
-        HStack {
-            Image(systemName: "gearshape")
-            .foregroundStyle(.white)
-            .padding(.leading, 12)
-
-            Spacer()
-
-            Text("Places")
-            .font(.headline)
-            .foregroundStyle(.white)
-
-            Spacer()
-
-            Text("History")
-            .foregroundStyle(.white.opacity(0.8))
-            .padding(.trailing, 12)
+        .sheet(item: $editingPlace) { place in
+            NavigationStack {
+                AddPlaceView(existingPlace: place)
+                    .environmentObject(vm)
+            }
         }
-        .frame(height: 48)
-        .background(Color.blue)
+        .alert("Location Permission Needed", isPresented: $showPermissionAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Please allow location access so region monitoring can work.")
+        }
+        .onAppear {
+            locationService.restartMonitoring(for: vm.places)
+        }
     }
 
     private var emptyStateView: some View {
@@ -78,17 +52,17 @@ struct PlacesListView: View {
             Spacer()
 
             Image(systemName: "mappin.and.ellipse")
-            .font(.system(size: 48))
-            .foregroundStyle(.blue)
+                .font(.system(size: 48))
+                .foregroundStyle(.blue)
 
             Text("No places added yet")
-            .font(.headline)
+                .font(.headline)
 
             Text("Tap the button below to add your first place.")
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, 32)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
 
             Spacer()
         }
@@ -100,45 +74,47 @@ struct PlacesListView: View {
                 NavigationLink {
                     ChecklistView(place: place)
                 } label: {
-                    HStack {
+                    HStack(alignment: .top, spacing: 12) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(place.name)
-                            .font(.headline)
+                                .font(.headline)
 
                             Text("Radius: \(Int(place.radiusMeters)) m")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
 
                             if let address = place.address, !address.isEmpty {
                                 Text(address)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(2)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(2)
                             }
 
                             monitoringStatusText(for: place)
                         }
 
-                        Spacer()
+                        Spacer(minLength: 8)
 
-                        Button {
-                            editingPlace = place
-                        } label: {
-                            Image(systemName: "pencil")
-                            .foregroundStyle(.blue)
-                        }
-                        .buttonStyle(.plain)
+                        VStack(spacing: 12) {
+                            Button {
+                                editingPlace = place
+                            } label: {
+                                Image(systemName: "pencil")
+                                    .foregroundStyle(.blue)
+                            }
+                            .buttonStyle(.plain)
 
-                        Toggle(
-                            "",
-                            isOn: Binding(
-                                get: { place.isEnabled },
-                                set: { newValue in
-                                    handleToggleChange(for: place, newValue: newValue)
-                                }
+                            Toggle(
+                                "",
+                                isOn: Binding(
+                                    get: { place.isEnabled },
+                                    set: { newValue in
+                                        handleToggleChange(for: place, newValue: newValue)
+                                    }
+                                )
                             )
-                        )
-                        .labelsHidden()
+                            .labelsHidden()
+                        }
                     }
                     .padding(.vertical, 4)
                 }
@@ -150,31 +126,46 @@ struct PlacesListView: View {
 
     @ViewBuilder
     private func monitoringStatusText(for place: Place) -> some View {
+        let status = monitoringStatus(for: place)
+
+        Label(status.text, systemImage: status.symbol)
+            .font(.caption2)
+            .foregroundStyle(status.color)
+    }
+
+    private func monitoringStatus(for place: Place) -> (text: String, symbol: String, color: Color) {
         if !place.hasCoordinates {
-            Text("No coordinates saved")
-            .font(.caption2)
-            .foregroundStyle(.orange)
-        } else if locationService.isMonitoring(place) {
-            Text("Monitoring active")
-            .font(.caption2)
-            .foregroundStyle(.green)
-        } else if place.isEnabled {
-            Text("Enabled, not currently monitored")
-            .font(.caption2)
-            .foregroundStyle(.orange)
-        } else {
-            Text("Monitoring off")
-            .font(.caption2)
-            .foregroundStyle(.secondary)
+            return ("Saved, but no location is selected yet.", "mappin.slash", .orange)
+        }
+
+        if locationService.isMonitoring(place) {
+            return ("Monitoring is active for this place.", "location.circle.fill", .green)
+        }
+
+        if !place.isEnabled {
+            return ("Saved, but monitoring is turned off.", "pause.circle", .secondary)
+        }
+
+        switch locationService.authorizationStatus {
+        case .denied, .restricted:
+            return ("Enabled, but location permission is blocked.", "exclamationmark.triangle.fill", .red)
+        case .notDetermined:
+            return ("Enabled, but location permission has not been granted yet.", "questionmark.circle", .orange)
+        case .authorizedWhenInUse:
+            return ("Enabled, but Always Location access is still needed for geofence monitoring.", "lock.shield", .orange)
+        case .authorizedAlways:
+            return ("Enabled, but monitoring has not started yet.", "clock.arrow.circlepath", .orange)
+        @unknown default:
+            return ("Enabled, but monitoring status is unavailable.", "questionmark.circle", .orange)
         }
     }
 
     private var statusBanner: some View {
         Text(locationService.lastEventMessage)
-        .font(.caption)
-        .foregroundStyle(.secondary)
-        .padding(.horizontal, 16)
-        .padding(.bottom, 8)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 8)
     }
 
     private var addPlaceButton: some View {

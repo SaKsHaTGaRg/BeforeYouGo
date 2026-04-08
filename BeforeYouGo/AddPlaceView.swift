@@ -45,9 +45,31 @@ struct AddPlaceView: View {
     }
 
     private var canSave: Bool {
-        !placeName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        !trimmedPlaceName.isEmpty &&
         selectedLatitude != nil &&
         selectedLongitude != nil
+    }
+
+    private var trimmedPlaceName: String {
+        placeName.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var saveRequirementsText: String {
+        var missingParts: [String] = []
+
+        if trimmedPlaceName.isEmpty {
+            missingParts.append("a place name")
+        }
+
+        if selectedLatitude == nil || selectedLongitude == nil {
+            missingParts.append("a selected location")
+        }
+
+        if missingParts.isEmpty {
+            return "Ready to save."
+        }
+
+        return "To save this place, add \(missingParts.joined(separator: " and "))."
     }
 
     var body: some View {
@@ -113,6 +135,12 @@ struct AddPlaceView: View {
                         .lineLimit(2...4)
                 }
 
+                Section {
+                    Text(saveRequirementsText)
+                        .font(.caption)
+                        .foregroundStyle(canSave ? .green : .secondary)
+                }
+
                 Section("Selected Location") {
                     if let lat = selectedLatitude, let lon = selectedLongitude {
                         if !selectedAddress.isEmpty {
@@ -135,6 +163,10 @@ struct AddPlaceView: View {
                         Text("No location selected yet.")
                             .foregroundStyle(.secondary)
                     }
+
+                    Text("Save stays disabled until you enter a place name and choose a location.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
 
                     if let locationError {
                         Text(locationError)
@@ -260,10 +292,8 @@ struct AddPlaceView: View {
     }
 
     private func save() {
-        let cleaned = placeName.trimmingCharacters(in: .whitespacesAndNewlines)
-
         guard
-            !cleaned.isEmpty,
+            !trimmedPlaceName.isEmpty,
             let lat = selectedLatitude,
             let lon = selectedLongitude
         else {
@@ -273,7 +303,7 @@ struct AddPlaceView: View {
         if let existingPlace {
             vm.updatePlace(
                 id: existingPlace.id,
-                name: cleaned,
+                name: trimmedPlaceName,
                 radiusMeters: radius,
                 address: selectedAddress.isEmpty ? nil : selectedAddress,
                 latitude: lat,
@@ -286,12 +316,12 @@ struct AddPlaceView: View {
                 locationService.stopMonitoring(for: existingPlace)
 
                 if let updated = vm.places.first(where: { $0.id == existingPlace.id }) {
-                    locationService.startMonitoring(for: updated)
+                    _ = locationService.startMonitoring(for: updated)
                 }
             }
         } else {
             vm.addPlace(
-                name: cleaned,
+                name: trimmedPlaceName,
                 radiusMeters: radius,
                 address: selectedAddress.isEmpty ? nil : selectedAddress,
                 latitude: lat,

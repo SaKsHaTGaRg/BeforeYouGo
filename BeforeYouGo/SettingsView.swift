@@ -4,7 +4,6 @@
 //
 //  Created by Artem Basko on 2026-02-08.
 //
-
 import SwiftUI
 
 struct SettingsView: View {
@@ -23,7 +22,6 @@ struct SettingsView: View {
                         Toggle("", isOn: $soundEnabled)
                             .labelsHidden()
                     }
-
                 }
 
                 Section("Location Permissions") {
@@ -34,18 +32,14 @@ struct SettingsView: View {
                             Image(systemName: "location.fill")
                                 .foregroundStyle(.secondary)
                                 .frame(width: 24)
-                            Text("Manage Permissions")
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Manage Permissions")
+                                Text("Open iOS Settings to review location access.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
-
-                    Button {
-                        openAppSettings()
-                    } label: {
-                        Text("Manage Permissions")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                 }
 
                 Section("General") {
@@ -62,26 +56,16 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
-                    }
-                }
-            }
         }
-    }
-
-    private func openAppSettings() {
-        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
-        UIApplication.shared.open(url)
     }
 }
 
-struct ManagePermissionsView: View {
+private struct ManagePermissionsView: View {
     var body: some View {
         VStack(spacing: 16) {
             Text("Manage Permissions")
-                .font(.title2).bold()
+                .font(.title2)
+                .bold()
 
             Text("iOS permissions are managed in the system Settings app.")
                 .foregroundStyle(.secondary)
@@ -102,7 +86,7 @@ struct ManagePermissionsView: View {
     }
 }
 
-struct AboutView: View {
+private struct AboutView: View {
     var body: some View {
         List {
             Section("BeforeYouGo") {
